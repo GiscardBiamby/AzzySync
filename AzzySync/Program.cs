@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure;
@@ -23,18 +24,42 @@ namespace AzzySync {
 
         [Verb(Description=@"Performs a one way sync of files from a local folder to an Azure blob storage container.")]
         public static void Sync(
-            [Description("Path of local folder to sync to blob storage.")] string localPath
-            , [Description("Name of the blob storage container.")] string containerName
-            , [Description("Connection string for the Azure blob storage account."), DefaultValue(@"UseDevelopmentStorage=true")] string storageConnectionString
+            [Description("Path of local folder to sync to blob storage.")] 
+            string localPath
+            
+            , [Description("Name of the blob storage container.")] 
+            string containerName
+            
+            , [Description("Connection string for the Azure blob storage account."), DefaultValue(@"UseDevelopmentStorage=true")] 
+            string storageConnectionString
         ) {
-            Console.WriteLine("Sync!");
+            try {
+                Console.WriteLine("Syncing localPath: '{0}', to container: '{1}'.", localPath, containerName);
 
-            var blobClient = CloudStorageAccount.Parse(storageConnectionString).CreateCloudBlobClient();
-            var container = blobClient.GetContainerReference(containerName);
-            container.CreateIfNotExists();
-            Console.WriteLine(container.Uri);
+                localPath = ResolveLocalDir(localPath);
+
+                var blobClient = CloudStorageAccount.Parse(storageConnectionString).CreateCloudBlobClient();
+                var container = blobClient.GetContainerReference(containerName);
+                var syncer = new SyncToBlobStorage(blobClient, new DefaultMIMETypeMapper());
+                syncer.Sync(container, localPath);
+            }
+            catch (Exception e) {
+                Console.WriteLine(e.ToString());
+            }
+
+        }
 
 
+        private static string ResolveLocalDir(string localPath) {
+            if (string.IsNullOrWhiteSpace(localPath)) {
+                throw new ArgumentNullException("localPath");
+            }
+
+            if (!Path.IsPathRooted(localPath)) {
+                localPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, localPath));
+            }
+
+            return localPath;
         }
 
         /// <summary>
