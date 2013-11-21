@@ -13,7 +13,7 @@ These examples work in a PowerShell console, but you can run these with very lit
     
     ```PowerShell
     .\AzzySync.exe s /containerName:images /localPath:"C:\static-content\images\"
-    ```PowerShell
+    ```
 
  2. Sync c:\static-content\ to Azure blob storage: 
     
