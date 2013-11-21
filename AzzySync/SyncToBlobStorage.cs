@@ -35,12 +35,6 @@ namespace AzzySync {
         }
     }
 
-    public class SyncStats {
-        public uint New { get; set; }
-        public uint Changed { get; set; }
-        public uint Deleted { get; set; }
-    }
-
     public class SyncedFile {
         public string LocalPath { get; set; }
         public CloudBlockBlob Blob { get; set; }
@@ -72,7 +66,7 @@ namespace AzzySync {
                 PublicAccess = BlobContainerPublicAccessType.Blob
             });
 
-            SyncLocalToBlob(localPath, container);
+            SyncLocalDirToBlob(localPath, container);
             Console.WriteLine(
                 @"Total new: {0}, updated: {1}, deleted {2}."
                 , _new.Count
@@ -81,11 +75,8 @@ namespace AzzySync {
             ); 
         }
 
-        private void SyncLocalToBlob(string localPath, CloudBlobContainer container) {
-            var blobs = container
-                .ListBlobs(useFlatBlobListing: true, blobListingDetails: BlobListingDetails.Metadata)
-                .OfType<CloudBlockBlob>()
-                .ToList();
+        private void SyncLocalDirToBlob(string localPath, CloudBlobContainer container) {
+            var blobs = GetBlobList(container);
             var blobLookup = blobs.ToLookup(container, localPath);
             var localFiles = Directory.GetFiles(localPath, "*", SearchOption.AllDirectories);
 
@@ -99,11 +90,21 @@ namespace AzzySync {
             DeleteBlobsThatAreNotInLocalDir(container, blobs, localFiles, basePath);
 
             // Get updated list of blobs so we can compare new local and remote counts: 
-            blobs = container
+            blobs = GetBlobList(container);
+            Console.WriteLine("Total local files: {0}, Total remote blobs: {1}.", localFiles.Count(), blobs.Count());
+        }
+
+        /// <summary>
+        /// Returns a flattened list of <see cref="CloudBlockBlob"/> items from the specified <paramref name="CloudBlobContainer"/>.
+        /// </summary>
+        /// <param name="container"></param>
+        /// <returns></returns>
+        private static List<CloudBlockBlob> GetBlobList(CloudBlobContainer container) {
+            var blobs = container
                 .ListBlobs(useFlatBlobListing: true, blobListingDetails: BlobListingDetails.Metadata)
                 .OfType<CloudBlockBlob>()
                 .ToList();
-            Console.WriteLine("Total local files: {0}, Total remote blobs: {1}.", localFiles.Count(), blobs.Count());
+            return blobs;
         }
 
         /// <summary>
