@@ -24,22 +24,17 @@ namespace AzzySync {
         [Verb(Description=@"Performs a one way sync of files from a local folder to an Azure blob storage container.")]
         public static void Sync(
             [Description("Path of local folder to sync to blob storage.")] string localPath
-            , [Description("Connection string for the Azure blob storage account.")] string cloudConnectionString
             , [Description("Name of the blob storage container.")] string containerName
+            , [Description("Connection string for the Azure blob storage account."), DefaultValue(@"UseDevelopmentStorage=true")] string storageConnectionString
         ) {
             Console.WriteLine("Sync!");
-            var connectionString = @"UseDevelopmentStorage=true";
-            
-            var blobClient = CloudStorageAccount.Parse(connectionString).CreateCloudBlobClient();
 
-            // Retrieve a reference to a container. 
+            var blobClient = CloudStorageAccount.Parse(storageConnectionString).CreateCloudBlobClient();
             var container = blobClient.GetContainerReference(containerName);
-
-            // Create the container if it does not already exist.
             container.CreateIfNotExists();
-
-            // Output container URI to debug window.
             Console.WriteLine(container.Uri);
+
+
         }
 
         /// <summary>
