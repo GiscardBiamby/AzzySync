@@ -15,7 +15,7 @@ These examples work in a PowerShell console, but you can run these with very lit
     .\AzzySync.exe s /containerName:images /localPath:"C:\static-content\images\"
     ```
 
- 2. Sync c:\static-content\ to Azure blob storage: 
+ 2. Sync c:\static-content\images\ to Azure blob storage: 
     
     ```PowerShell
     .\AzzySync.exe s /containerName:images /localPath:"C:\static-content\images\" /storageconnectionstring:"DefaultEndPointsProtocol=YOUR_CHOICE_OF_HTTP_OR_HTTPS;AccountName=YOUR_STORAGE_ACCOUNT_NAME;AccountKey=YOUR_STORAGE_ACCOUNT_KEY;"
