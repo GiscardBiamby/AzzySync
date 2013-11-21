@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
+using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Microsoft.WindowsAzure.Storage.Blob;
-using System.Web;
-using System.Security.Cryptography; 
+using System.Linq;
+using System.Security.Cryptography;
+using Microsoft.WindowsAzure.Storage.Blob; 
 
 namespace AzzySync {
     /// <summary>
