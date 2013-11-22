@@ -7,28 +7,7 @@ using System.Security.Cryptography;
 using Microsoft.WindowsAzure.Storage.Blob; 
 
 namespace AzzySync {
-    /// <summary>
-    /// Maps file names to a MIME type. This is used to set the Content-Type header when uploading to blob storage. 
-    /// </summary>
-    public interface IMIMETypeMapper {
-        /// <summary>
-        /// Gets MIME type for the specified file.
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        string GetMIMETypeFromFileName(string fileName);
-    }
-
-    /// <summary>
-    /// Implementation of IMIMETypeMapper that uses System.Web.MimeMapping. 
-    /// Dunno if this would work on Mono, but it's OK for the moment. 
-    /// </summary>
-    public class DefaultMIMETypeMapper : IMIMETypeMapper {
-        public string GetMIMETypeFromFileName(string fileName) {
-            return System.Web.MimeMapping.GetMimeMapping(fileName);
-        }
-    }
-
+    
     public class SyncedFile {
         public string LocalPath { get; set; }
         public CloudBlockBlob Blob { get; set; }
@@ -205,40 +184,4 @@ namespace AzzySync {
         }
     }
 
-    public static class CloudBlobExtensions {
-        /// <summary>
-        /// Returns a Dictionary that is keyed off of the localPath of the specified blobs.
-        /// </summary>
-        /// <param name="blobs"></param>
-        /// <param name="container"></param>
-        /// <param name="localPath"></param>
-        /// <returns></returns>
-        public static Dictionary<string, CloudBlockBlob> ToLookup(
-            this List<CloudBlockBlob> blobs
-            , CloudBlobContainer container
-            , string localPath
-        ) {
-            var baseUri = container.Uri.ToString();
-            return blobs.ToDictionary(b => b.GetLocalPath(localPath), b => b, StringComparer.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Returns the path of the blob in the local directory (the "localPath" param) being synced.
-        /// </summary>
-        /// <param name="blob"></param>
-        /// <param name="localPath"></param>
-        /// <returns></returns>
-        public static string GetLocalPath(this CloudBlockBlob blob, string localPath) {
-            var containerPath = blob.Container.Uri.LocalPath.ToString();
-            var blobLocalPath = blob.Uri.LocalPath;
-            string path = blobLocalPath.Remove(0, containerPath.Length).Replace('/', Path.DirectorySeparatorChar);
-
-            if (path.StartsWith(Path.DirectorySeparatorChar.ToString())) {
-                path = path.Substring(1);
-            }
-
-            path = Path.GetFullPath(Path.Combine(localPath, path));
-            return path;
-        }
-    }
 }
