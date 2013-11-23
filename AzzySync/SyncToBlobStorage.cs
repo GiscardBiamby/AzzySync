@@ -13,18 +13,23 @@ namespace AzzySync {
         public CloudBlockBlob Blob { get; set; }
     }
 
+    public class SyncOptions {
+        public bool ForceReupload { get; set; }
+    }
+
     /// <summary>
     /// 
     /// </summary>
     public class SyncToBlobStorage {
         protected readonly CloudBlobClient _blobClient;
         protected readonly IMIMETypeMapper _mimeMapper;
-
+        protected readonly SyncOptions _options;
         protected ConcurrentBag<SyncedFile> _new;
         protected ConcurrentBag<SyncedFile> _changed;
         protected ConcurrentBag<SyncedFile> _deleted;
 
-        public SyncToBlobStorage(CloudBlobClient blobClient, IMIMETypeMapper mimeMapper) {
+        public SyncToBlobStorage(CloudBlobClient blobClient, IMIMETypeMapper mimeMapper, SyncOptions options) {
+            _options = options;
             _new = new ConcurrentBag<SyncedFile>();
             _changed = new ConcurrentBag<SyncedFile>();
             _deleted = new ConcurrentBag<SyncedFile>();
@@ -104,6 +109,11 @@ namespace AzzySync {
                     UploadToBlob(container, localFile, blobName, fileHash);
                     _new.Add(new SyncedFile { LocalPath = localFile, Blob = blob });
                 }
+                else if (_options.ForceReupload) {
+                    Console.WriteLine("'ForceReupload' enabled. Uploading: {0}", localFile);
+                    UploadToBlob(container, localFile, blobName, fileHash);
+                    _new.Add(new SyncedFile { LocalPath = localFile, Blob = blob });
+                }
                 else {
                     if (fileHash != blob.Metadata["Hash"]) {
                         Console.WriteLine("Hashes differ, re-uploading: {0}", localFile);
@@ -180,7 +190,7 @@ namespace AzzySync {
         /// <param name="localFile"></param>
         /// <returns></returns>
         private static string GetBlobName(string basePath, string localFile) {
-            return localFile.Replace(basePath, "").Replace(@"\", @"/");
+            return localFile.Replace(basePath, "").Replace(@"\", @"/").ToLower();
         }
     }
 

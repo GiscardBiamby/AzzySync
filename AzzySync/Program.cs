@@ -20,11 +20,18 @@ namespace AzzySync {
             [Description("Path of local folder to sync to blob storage.")] 
             string localPath
             
-            , [Description("Name of the blob storage container.")] 
+            , 
+            [Description("Name of the blob storage container.")] 
             string containerName
             
-            , [Description("Connection string for the Azure blob storage account."), DefaultValue(@"UseDevelopmentStorage=true")] 
+            , 
+            [Description("Connection string for the Azure blob storage account."), DefaultValue(@"UseDevelopmentStorage=true")] 
             string storageConnectionString
+            
+            , 
+            [Description("Forces re-upload all files from local dir to blob storage. This bypasses the hash calculation/check to see if a file has changed.")]
+            [DefaultValue(false)] 
+            bool forceReupload 
         ) {
             try {
                 Console.WriteLine("Syncing localPath: '{0}', to container: '{1}'.", localPath, containerName);
@@ -33,7 +40,7 @@ namespace AzzySync {
 
                 var blobClient = CloudStorageAccount.Parse(storageConnectionString).CreateCloudBlobClient();
                 var container = blobClient.GetContainerReference(containerName);
-                var syncer = new SyncToBlobStorage(blobClient, new DefaultMIMETypeMapper());
+                var syncer = new SyncToBlobStorage(blobClient, new DefaultMIMETypeMapper(), new SyncOptions{ ForceReupload = forceReupload });
                 syncer.Sync(container, localPath);
             }
             catch (Exception e) {
